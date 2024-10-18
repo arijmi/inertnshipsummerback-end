@@ -1,0 +1,42 @@
+name: Deploy MeetSoccer
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v2
+
+    - name: Set up Docker Buildx
+      uses: docker/setup-buildx-action@v1
+
+    - name: Login to Amazon ECR
+      run: aws ecr get-login-password --region eu-west-3 | docker login --username AWS --password-stdin <your-ecr-url>
+
+    - name: Build Backend Image
+      run: docker build -t meet_soccer_backend ./backend
+
+    - name: Build Frontend Image
+      run: docker build -t meet_soccer_frontend ./frontend
+
+    - name: Push Backend to ECR
+      run: docker tag meet_soccer_backend <your-ecr-url>/meet_soccer_backend:latest && docker push <your-ecr-url>/meet_soccer_backend:latest
+
+    - name: Push Frontend to ECR
+      run: docker tag meet_soccer_frontend <your-ecr-url>/meet_soccer_frontend:latest && docker push <your-ecr-url>/meet_soccer_frontend:latest
+
+    - name: Deploy RDS and ECS
+      run: |
+        aws cloudformation create-stack --stack-name MeetSoccerStack --template-body file://your-cloudformation-template.yaml --region eu-west-3
+
+    - name: Wait for RDS Creation
+      run: sleep 600 # Wait 10 minutes for RDS to be fully ready
+
+    - name: Update ECS Service for Backend
+      run: aws ecs update-service --cluster MeetSoccerCluster --service MeetSoccerBackendService --force-new-deployment --region eu-west-3

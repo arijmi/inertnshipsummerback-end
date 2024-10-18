@@ -1,0 +1,14 @@
+{
+    "configurations": [
+        {
+            "type": "java",
+            "name": "Spring Boot-MeetSoccerApplication<meet-soccer>",
+            "request": "launch",
+            "cwd": "${workspaceFolder}",
+            "mainClass": "com.meetsoccer.meet_soccer.MeetSoccerApplication",
+            "projectName": "meet-soccer",
+            "args": "",
+            "envFile": "${workspaceFolder}/.env"
+        }
+    ]
+}
